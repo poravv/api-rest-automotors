@@ -11,27 +11,10 @@ require("dotenv").config()
 
 routes.post('/login/', async (req, res) => {
 
-    //console.log(`select * from usuario where nick = '${nick}' and password = '${md5(password)}'`)
     try {
-        console.log(req.body)
+        //console.log(req.body)
         const { nick, password } = req.body;
-
         //console.log(md5(password));
-
-        /*
-        let rsusuario = await database.query(`select * from usuario where nick = '${nick}' and password = '${md5(password)}'`,
-            {
-                model: usuario,
-                mapToModel: true, // pass true here if you have any mapped fields
-                include: [
-                    { model: sucursal },
-                    { model: persona }
-                ]
-
-            }
-        );
-        */
-
         const rsusuario = await usuario.findOne(
         {where: { nick: nick,password: md5(password) },
             include: [
@@ -40,7 +23,11 @@ routes.post('/login/', async (req, res) => {
             ]
         })
 
-        await database.query('CALL cargaInventarioCab(@a)');
+            try {
+                await database.query('CALL cargaInventarioCab(@a)');
+            } catch (error) {
+                console.log('Error cargaInventarioCab',error)
+            }
 
         //console.log(rsusuario);
         //console.log(rsusuario.length);

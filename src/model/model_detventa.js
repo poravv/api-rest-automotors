@@ -1,23 +1,19 @@
 const{DataTypes}=require("sequelize")
 const sequelize=require("../database")
-const producto_final=require("./model_producto_final")
+const det_modelo=require("./model_detmodelo")
 
 const det_venta=sequelize.define("det_venta",{
     idventa:{
         type:DataTypes.INTEGER,
         primaryKey:true
     },
-    idproducto_final:{
+    iddet_modelo:{
         type:DataTypes.INTEGER,
         primaryKey:true
     },
     estado:{
         type:DataTypes.STRING,
         primaryKey:true
-    },
-    cantidad:{
-        type:DataTypes.INTEGER,
-        allowNull:false
     },
     descuento:{
         type:DataTypes.DECIMAL(13.2),
@@ -32,9 +28,9 @@ const det_venta=sequelize.define("det_venta",{
     timestamps:false
 })
 
-det_venta.hasOne(producto_final,{
-    foreignKey:"idproducto_final",
-    sourceKey:"idproducto_final"
+det_venta.hasOne(det_modelo,{
+    foreignKey:"iddet_modelo",
+    sourceKey:"iddet_modelo"
 })
 
 module.exports=det_venta

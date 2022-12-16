@@ -5,9 +5,11 @@ const venta = require("../model/model_venta")
 const usuario = require("../model/model_usuario")
 const cliente = require("../model/model_cliente")
 const detventa = require("../model/model_detventa")
-const producto_final = require("../model/model_producto_final")
+const det_modelo = require("../model/model_detmodelo")
+const modelo = require("../model/model_modelo")
 const database = require('../database');
 const verificaToken = require('../middleware/token_extractor')
+const{DataTypes}=require("sequelize")
 require("dotenv").config()
 
 routes.get('/get/', verificaToken, async (req, res) => {
@@ -15,7 +17,11 @@ routes.get('/get/', verificaToken, async (req, res) => {
         include: [
             { model: usuario },
             { model: cliente },
-            { model: detventa , include:[{ model:producto_final }]},
+            { model: detventa , 
+                include:[{ model:det_modelo,
+                        include:[{ model:modelo }] 
+                        }]
+            },
         ]
     })
 
@@ -32,13 +38,40 @@ routes.get('/get/', verificaToken, async (req, res) => {
     })
 });
 
+routes.get('/getestadistica/', verificaToken, async (req, res) => {
+    //console.log('Entra en getestadistica----------------')
+    try {
+        const det_modelos = await database.query(`select * from estadistica_ventas `,{type: DataTypes.SELECT})
+        
+        console.log(det_modelos[0]);
+
+    jwt.verify(req.token, process.env.CLAVESECRETA, (err, authData) => {
+        if (err) {
+            res.json({error: "Error ",err});
+        } else {
+            res.json({
+                mensaje: "successfully",
+                authData: authData,
+                body: det_modelos[0]
+            })
+        }
+    })
+    } catch (error) {
+        res.json({error: "Error catch ",error});
+    }
+})
+
 routes.get('/getvenusu/:idusuario', verificaToken, async (req, res) => {
     try {
         const ventas = await venta.findAll({where: { idusuario: req.params.idusuario,estado: 'AC' },
             include: [
                 { model: usuario },
                 { model: cliente },
-                { model: detventa , include:[{ model:producto_final }]},
+                { model: detventa , 
+                    include:[{ model:det_modelo,
+                            include:[{ model:modelo }] 
+                            }]
+                },
             ]
         })
     
@@ -61,10 +94,10 @@ routes.get('/getvenusu/:idusuario', verificaToken, async (req, res) => {
 });
 
 /*venta o retorno*/
-routes.post('/operacionventa/:idproducto_final-:operacion-:idusuario-:total', verificaToken, async (req, res) => {
+routes.post('/operacionventa/:iddet_modelo-:operacion-:idusuario-:total', verificaToken, async (req, res) => {
 
     try {
-        await database.query('CALL addventainventario('+req.params.idproducto_final+',"'+req.params.operacion+'",'+req.params.idusuario+','+req.params.total+',@a)');
+        await database.query('CALL addventainventario('+req.params.iddet_modelo+',"'+req.params.operacion+'",'+req.params.idusuario+','+req.params.total+',@a)');
 
         jwt.verify(req.token, process.env.CLAVESECRETA, (err, authData) => {
             if (err) {
@@ -113,7 +146,7 @@ routes.get('/get/:idventa', verificaToken, async (req, res) => {
         include: [
             { model: usuario },
             { model: cliente },
-            { model: detventa , include:[{ model:producto_final }]},
+            { model: detventa , include:[{ model:det_modelo }]},
         ]
     })
     jwt.verify(req.token, process.env.CLAVESECRETA, (err, authData) => {
@@ -134,7 +167,7 @@ routes.get('/getDet/', verificaToken, async (req, res) => {
         include: [
             { model: usuario },
             { model: cliente },
-            { model:detventa , include:[{ model:producto_final }]},
+            { model:detventa , include:[{ model:det_modelo }]},
         ]
     })
 
